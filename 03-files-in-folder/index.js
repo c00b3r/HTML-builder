@@ -1,24 +1,24 @@
-const fs = require('fs'); 
-const path = require('path'); 
-const dirname = "./03-files-in-folder/secret-folder"
-const {size} = fs.statSync('./03-files-in-folder/secret-folder');
+const fs = require('fs').promises;
+const path = require('path');
 
-fs.readdir(dirname,{ withFileTypes: true }, (err, files) => { 
-  if (err) 
-    console.log(err); 
-  else { 
-    const filesNames = files
-        .filter(files => files.isFile())
-        .map(files => files.name);
-    console.log("\nCurrent directory filenames:"); 
-    files.forEach(filesNames => { 
-      const stats = fs.stat(`./03-files-in-folder/secret-folder/${filesNames.name}`, (err, stats) => {
-        if (err) {
-          console.error(err);
-          return;
+const folderPath = path.join(__dirname, 'secret-folder');
+
+async function displayFileInfo() {
+    try {
+        const files = await fs.readdir(folderPath, { withFileTypes: true });
+        for (const file of files) {
+            if (file.isFile()) {
+                const fileExtension = path.extname(file.name).slice(1); 
+
+                const filePath = path.join(folderPath, file.name);
+                const stats = await fs.stat(filePath);
+
+                console.log(`${file.name} - ${fileExtension} - ${stats.size / 1000 } kb`);
+            }
         }
-        console.log(path.parse(filesNames.name).name, "-", path.parse(filesNames.name).ext, "-", stats.size / 1000 + 'kb');
-      });
-    }) 
-  } 
-}) 
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+displayFileInfo();
